@@ -699,7 +699,7 @@ class auth_plugin_authshibboleth extends DokuWiki_Auth_Plugin
         $values = $this->getShibVar($sourceAttributeName, true);
         if (null !== $values) {
             foreach ($values as $value) {
-                
+                $value = explode(':', $value)[0];
                 $groups[] = $value;
             }
         }
