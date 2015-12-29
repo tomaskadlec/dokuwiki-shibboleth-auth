@@ -96,6 +96,7 @@ class auth_plugin_authshibboleth extends DokuWiki_Auth_Plugin
         if(@is_writable(DOKU_CONF . '/' . $this->getConf(self::CONF_AUTH_USERSFILE))) {
             $this->cando['getUsers'] = true;
             $this->cando['getUserCount'] = true;
+            $this->cando['getGroups'] = true;
         }
         
         $this->setEnvironment($_SERVER);
@@ -253,6 +254,29 @@ class auth_plugin_authshibboleth extends DokuWiki_Auth_Plugin
             $count += $this->_filter($user, $info);
         }
         return $count;
+    }
+
+    /**
+     * Retrieves a list of groups that are known at the time
+     *
+     * @param int $start
+     * @param int $limit
+     * @return array
+     */
+    public function retrieveGroups($start = 0, $limit = 0)
+    {
+        $groups = array();
+        if(@is_readable(DOKU_CONF . '/' . $this->getConf(self::CONF_AUTH_USERSFILE))) {
+            $fh = @fopen(DOKU_CONF . '/' . $this->getConf(self::CONF_AUTH_USERSFILE), "r");
+            while(!feof($fh)) {
+                $line = fgets($fh);
+                list($username, $name, $email, $userGroups) = explode(':', $line);
+                $userGroups = explode(',', $userGroups);
+                $groups = array_unique(array_merge($groups, $userGroups));
+            }
+        }
+        $groups = array_filter($groups); // without callback remove all entries equal to FALSE
+        return array_slice($groups, $start, ($limit !== 0 ? $limit : NULL));
     }
 
     /**
