@@ -39,15 +39,24 @@ class action_plugin_authshibboleth extends DokuWiki_Action_Plugin
 
     public function register(Doku_Event_Handler &$controller)
     {
+        $controller->register_hook('HTML_LOGINFORM_OUTPUT', 'BEFORE', $this, 'alterLoginPage');
         $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'redirectToLoginHandler');
     }
-
 
     public function redirectToLoginHandler($event, $param)
     {
         global $ACT;
+        global $INPUT;
+        global $conf;
+
+        $continue = false;
+        if ($conf['authtype'] == 'authchained' && $ACT == 'login' && $INPUT->has('authshibboleth')) {
+            $continue = true;
+        } else if ($conf['authtype'] == 'authshibboleth' && $ACT == 'login') {
+            $continue = true;
+        }
         
-        if ('login' == $ACT) {
+        if ($continue) {
             $loginHandlerLocation = $this->getConf(self::CONF_LOGIN_HANDLER_LOCATION);
             if (! $loginHandlerLocation) {
                 $loginTarget = $this->getConf(self::CONF_LOGIN_TARGET);
@@ -65,6 +74,24 @@ class action_plugin_authshibboleth extends DokuWiki_Action_Plugin
         }
     }
 
+    /**
+     * Alters login page via HTML_LOGINFORM_OUTPUT event
+     * @param $event
+     * @param $param
+     */
+    public function alterLoginPage($event, $param)
+    {
+        global $conf;
+        if ($conf['authtype'] != 'authchained')
+            return;
+
+        /** @var Doku_Form $form */
+        $form = $event->data;
+        $form->startFieldset($this->getLang('login_authshibboleth'));
+        $form->addElement('<button type="submit" name="authshibboleth">'
+            .$this->getLang('login_authshibboleth_submit').'</button>');
+        $form->endFieldset();
+    }
 
     protected function mkShibHandler()
     {
