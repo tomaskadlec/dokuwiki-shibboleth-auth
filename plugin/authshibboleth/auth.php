@@ -382,10 +382,9 @@ class auth_plugin_authshibboleth extends DokuWiki_Auth_Plugin
             $userInfo = $this->getUserInfo();
         }
 
+        $userInfo['plugin'] = 'authshibboleth';
         $_SESSION[DOKU_COOKIE]['auth']['user'] = $userInfo['uid'];
         $_SESSION[DOKU_COOKIE]['auth']['info'] = $userInfo;
-
-
     }
 
 
@@ -399,7 +398,12 @@ class auth_plugin_authshibboleth extends DokuWiki_Auth_Plugin
         if (isset($_SESSION[DOKU_COOKIE]['auth']) && is_array($_SESSION[DOKU_COOKIE]['auth'])) {
             $authInfo = $_SESSION[DOKU_COOKIE]['auth'];
             
-            if (isset($authInfo['user']) && isset($authInfo['info']) && is_array($authInfo['info'])) {
+            if (isset($authInfo['user'])
+                && isset($authInfo['info'])
+                && is_array($authInfo['info'])
+                && isset($authInfo['info']['plugin'])
+                && $authInfo['info']['plugin'] == 'authshibboleth')
+            {
                 $userInfo = $authInfo['info'];
                 $username = $authInfo['user'];
                 
