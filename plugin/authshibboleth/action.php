@@ -107,17 +107,25 @@ class action_plugin_authshibboleth extends DokuWiki_Action_Plugin
 
     protected function mkRefererUrl($ssl = true)
     {
-        $urlParts = parse_url($_SERVER['HTTP_REFERER']);
-        
-        $host = $urlParts['host'];
-        if ($urlParts['port'] && $urlParts['port'] != '80' && $urlParts['port'] != '443') {
-            $host .= ':' . $urlParts['port'];
+        global $ID;
+        if (!empty($_SERVER['HTTP_REFERER']) && preg_match('/^' . DOKU_URL .'/', $_SERVER['HTTP_REFERER'])) {
+            return $_SERVER['HTTP_REFERER'];
+        } else if (!empty($ID)) {
+            return wl($ID, [], true);
+        } else {
+            return DOKU_URL;
         }
-        
-        $query = array();
-        parse_str($urlParts['query'], $query);
-        
-        return $this->mkUrl($host, $urlParts['path'], $query, $ssl);
+//        $urlParts = parse_url($_SERVER['HTTP_REFERER']);
+//
+//        $host = $urlParts['host'];
+//        if ($urlParts['port'] && $urlParts['port'] != '80' && $urlParts['port'] != '443') {
+//            $host .= ':' . $urlParts['port'];
+//        }
+//
+//        $query = array();
+//        parse_str($urlParts['query'], $query);
+//
+//        return $this->mkUrl($host, $urlParts['path'], $query, $ssl);
     }
 
 
